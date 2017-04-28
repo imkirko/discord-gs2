@@ -1,7 +1,10 @@
 # discord-gs2
 Connect to discord (sorta) using GS2
 
-First create the client
+Some stuff you need:
+http://forums.graalonline.com/forums/showthread.php?t=134265118
+
+ First create the client
 
 ```js
 function onCreated() {
@@ -15,7 +18,7 @@ function createBot() {
 }
 ```
 
-Then do stuff with it
+ Then do stuff with it
 
 ```js
 // called from login() func
@@ -40,7 +43,9 @@ function Bot.onSynced() {
 ```
 
 Also,
+
 You can connect to a webhook easily
+
 ```js
   this.client = new TWebhookClient();
   this.client.connect(idOrUrl, token); // token not needed if using url
