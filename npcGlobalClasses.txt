@@ -6,7 +6,7 @@ function onCreated() {
   // "T" is not needed but it looks cool
   createClass("TDiscord", "TStaticVar", {"discord", "discord_embed", "discord_http_endpoints", "discord_http", "func_http"});
   createClass("TCollection", "TStaticVar", {"discord_collection"});
-  createClass("TWebhookClient", "TStaticVar", {"discord_webhook_client", "discord_embed", "discord_http_endpoints", "discord_http", "func_http", "func_promises"});
+  createClass("TWebhookClient", "TStaticVar", {"discord_webhook_client", "discord_embed", "discord_http_endpoints", "discord_http", "func_http"});
 
   RC.showErrors();
 }
