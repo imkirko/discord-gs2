@@ -1,0 +1,96 @@
+
+function onInitialized() onCreated();
+function onCreated() {
+  // clear time
+  this.clearVars();
+}
+
+// Same as echo and printf but just cooler. cause uknow
+public function log(msg) {
+  temp.args = getArgs(params, 1);
+  echo(format2(msg, args));
+}
+
+// If value = true, msg will be echoed
+public function assert(value, msg) {
+  if (value == true) {
+    temp.args = getArgs(params, 2);
+    echo(format2(msg, args));
+  }
+}
+
+// Will be red text... s/o to rc3
+public function error(msg) {
+  temp.args = getArgs(params, 1);
+  echo("#ALERT " @ format2(msg, args));
+  return false;
+}
+
+// Will be red text and flash in rc
+public function warn(msg) {
+  temp.args = getArgs(params, 1);
+  echo("#ALERTFS " @ format2(msg, args));
+}
+
+// See time difference from time to timeEnd
+public function time(event) {
+  this.(@ event) = timevar2;
+}
+
+public function timeEnd(event) {
+  if (this.(@ event)) {
+    printf("%s: %s", event, timevar2 - this.(@ event));
+    this.(@ event) = null;
+    this.clearEmptyVars();
+  }
+}
+
+// See where function is being called from
+public function trace(msg) {
+  temp.args    = getArgs(params, 1);
+  temp.message = format2("Trace: " @ msg @ "\n", args);
+  
+  temp.callstack = getCallStack(); 
+  for (temp.i = callstack.size() - 2; i >= 0; i --) {
+    temp.cs = callstack[i];
+    temp.message @= "\tat " @ cs.scriptcallobject.name @ "." @ cs.name @ " (" @ cs.scriptline @ ")\n";
+  }
+
+  echo(message);
+}
+
+// Object calling debug must have debug = true; 
+public function debug(msg) {
+  temp.callstack = getCallStack();
+  temp.obj = temp.callstack[temp.callstack.size() - 2].scriptcallobject;
+  if (temp.obj.debug) {
+    temp.args    = getArgs(params, 1);
+    temp.message = format2("Debugging " @ temp.obj.name @ ": " @ msg @ "\n", temp.args);
+    echo(message);
+  }
+}
+
+// Show script errors 
+// debugOnly (boolean) - whether to only show when  obj.debug == true
+public function showErrors(debugOnly) {
+  temp.callstack = getCallStack();
+  temp.obj = temp.callstack[temp.callstack.size() - 2].scriptcallobject;
+
+  temp.print = false;
+  if (temp.obj.scriptErrors != null)
+    if (debugOnly) {
+      if (temp.obj.debug) 
+        temp.print = true;
+    } else 
+      temp.print = true;
+
+  if (temp.print == true)
+    printf("%s Errors: %s", temp.obj.name, temp.obj.scriptErrors);
+}
+
+// Remove some arguemnts
+function getArgs(p, size) {
+  for (temp.i = 0; i < size; i ++)
+    p.delete(0);
+  return p;
+}
