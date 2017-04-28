@@ -1,0 +1,45 @@
+
+const BASE = "https://discordapp.com/api";
+
+function onCreated() {
+  setEndpoints();
+}
+
+public function setEndpoints() {
+  with (this.endpoints) {
+    this.clearVars();
+    
+    this.login            = BASE @ "/auth/login";
+    this.logout           = BASE @ "/auth/logout";
+
+    this.user             = BASE @ "/users/%s";
+    this.avatar           = BASE @ "/users/%s/avatars/%s.%s";
+    this.me               = BASE @ "/users/@me";
+    this.me.guilds        = this.me @ "/guilds";
+
+    this.guilds           = BASE @ "/guilds";
+    this.guild            = this.guilds @ "/%s";
+    this.guild.channels   = this.guild @ "/channels";
+    this.guild.bans       = this.guild @ "/bans";
+    this.guild.members    = this.guild @ "/members";
+    this.guild.webhooks   = this.guild @ "/webhooks";
+
+    this.channels         = BASE @ "/channels";
+    this.channel          = this.channels @ "/%s";
+    this.channel.typing   = this.channel @ "/typing";
+    this.channel.pins     = this.channel @ "/pins";
+    this.channel.messages = this.channel @ "/messages";
+    this.channel.message  = this.channelMessages @ "/%s";
+    this.channel.invites  = this.channel @ "/invites";
+    this.channel.webhooks = this.channel @ "/webhooks";
+
+    this.webhooks         = BASE @ "/webhooks/%s";
+    this.webhooks.token   = BASE @ "/webhooks/%s/%s";
+    this.webhooks.token.github = BASE @ "/webhooks/%s/%s/github";
+
+    this.invite           = BASE @ "/invite/%s";
+    this.invite.link      = BASE @ "https://discord.gg/%s";
+    this.gateway          = BASE @ "/gateway";
+    this.gateway.bot      = BASE @ "/gateway/bot";
+  }
+}

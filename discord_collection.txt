@@ -1,0 +1,35 @@
+
+// Call when creating. like constructor
+public function init(temp.cName, temp.superObj) {
+  // should be private but uknow. graal probs
+  this._super = temp.superObj;
+  this._cName = temp.cName;
+  return this;
+}
+
+public function clear() {
+  this.clearVars();
+}
+
+// doesn't work, function doesnt pass
+public function forEach(temp.callback) {
+  for (temp.item : this._super.(@ this._cName)) {
+    echo(temp.item);
+    temp.callback(@ temp.item, temp.item, this._super.(@ this._cName));
+  }
+}
+
+public function get(temp.key) {
+  return this.(@ temp.key);
+}
+
+public function has(temp.key) {
+  return isObject(this.(@ temp.key));
+}
+
+public function find(temp.prop, temp.value) {
+  for (temp.item : this._super.(@ this._cName))
+    if (temp.item.(@ temp.prop) == temp.value)
+      return temp.item;
+  return this;
+}

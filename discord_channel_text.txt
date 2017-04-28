@@ -1,0 +1,168 @@
+/*
+  extends: discord_channel
+
+  vars
+  .last_message_id
+  .topic
+*/
+
+/*
+  Sends text based message
+  
+  @param {string} message - Content of the message
+  @param {string[]} [options] - Message parameters
+  @return {Message}
+*/
+public function sendMessage(temp.message, temp.options) {
+  temp.options.add({"content", temp.message});
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.messages, this.id), temp.options, false);
+  if (!this._super.checkForError(temp.req)) {
+    temp.req.join("discord_message");
+    return temp.req;
+  }
+}
+
+/*
+  Sends embeded message
+
+  @param {string} content - Message content
+  @param {TStaticVar} embedObj
+  @return {Message}
+*/
+public function sendEmbed(temp.content, temp.embedObj) {
+  if (temp.embedObj.isinclass("discord_embed")) {
+    temp.embedObj.base.content = temp.content;
+    temp.json = temp.embedObj.stringify();
+    return sendMessage(temp.content, {
+      {"payload_json", temp.json}
+    });
+  }
+}
+
+/*
+  Sends code formated message
+
+  @param {string} language
+  @param {string} code
+  @return {Message}
+*/
+public function sendCode(temp.language, temp.code) {
+  temp.msg = format("```%s\n%s\n```", temp.language, temp.code);
+  return sendMessage(temp.msg);
+}
+
+/*
+  Shows typing indicator
+
+  @return {boolean} was succesful
+*/
+public function triggerTyping() {
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.typing, this.id), null, false);
+  if (!this._super.checkForError(temp.req)) {
+    return true;
+  }
+}
+
+/*
+  todo: fix this Expected \"Content-Type\" header to be one of set(['application/json']).
+  @param {string} webhookName - Name of the webhook
+  @param {} avatar - gotta fix this
+*/
+public function createWebhook(temp.webhookName, temp.avatar) {
+  temp.options = {
+    {"name", temp.webhookName},
+    {"avatar", "https://cdn.discordapp.com/embed/avatars/0.png"}
+  };
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.webhooks, this.id), temp.options, true);
+
+  if (!this._super.checkForError(temp.req)) {
+    return temp.req;
+  }
+}
+
+public function getWebhooks() {
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, false);
+
+  if (!this._super.checkForError(temp.req)) {
+    return temp.req;
+  }
+}
+
+// todo: fix this
+public function sendServerCode(temp.type, temp.scriptName) {
+  temp.file = temp.scriptName;
+  temp.type = getScriptType(temp.type);
+
+  switch (temp.type) {
+    case "npc":
+      temp.folder = "npcs/";
+      temp.file = "npc" @ escapefilename(temp.file);
+      temp.filterStart = "NPCSCRIPT";
+      temp.filterEnd   = "NPCSCRIPTEND";
+      break;
+
+    case "weapon":
+      temp.folder = "weapons/";
+      temp.file = "weapon" @ escapefilename(temp.file);
+      temp.filterStart = "SCRIPT";
+      temp.filterEnd   = "SCRIPTEND";
+      break;
+
+    case "class":
+      temp.folder = "scripts/";
+      break;
+  }
+  
+  temp.file @= ".txt";
+
+  if (fileexists(temp.folder @ temp.file)) {
+    temp.lines.loadlines(temp.folder @ temp.file);
+    
+    if (temp.type == "class") {
+      for (temp.line : temp.lines) {
+        temp.fullText @= temp.line @ "\n";
+      }
+    } else if (temp.type in {"weapon", "npc"}) {
+      for (temp.line : temp.lines) {
+        if (temp.line.starts(temp.filterStart)) {
+          temp.filter = true;
+        } else if (temp.filter == true) {
+          if (temp.line.starts(temp.filterEnd))
+            break;
+
+          temp.fullText @= temp.line @ "\n";
+        }
+      }
+    }
+  } else {
+    temp.err = "File doesn't exist";
+  }
+
+  if (temp.fullText.length() >= 2000)
+    temp.err = "Code is longer than 2000 characters";
+
+  if (temp.err) {
+    RC.trace("Can't send code: %s\n", temp.error);
+    return;
+  }
+  
+  return sendCode("js", temp.fullText);
+}
+
+function getScriptType(temp.type) {
+  switch (temp.type) {
+    case "npcs":
+    case "dbnpc":
+    case "npc":
+      return "npc";
+
+    case "weapons":
+    case "weapon":
+      return "weapon";
+
+    case "class":
+    case "scripts":
+    case "classes":
+      return "class";
+  }  
+}

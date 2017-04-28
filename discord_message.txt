@@ -1,0 +1,11 @@
+
+function onCreated() {
+  echo("joined: message");
+}
+
+// IDK how to do other http methods
+public function delete() {}
+
+public function edit(temp.content, temp.options) {}
+
+public function addReaction(temp.emojiNameOrID) {}

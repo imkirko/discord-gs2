@@ -1,0 +1,23 @@
+/*
+  vars
+  .type
+  .id
+  .is_private
+  .guild_id
+  .position
+  .permission_overwrites
+*/
+
+function onCreated() {
+  if (this.type != null) {
+    this.join("discord_channel_" @ this.type);
+  }
+}
+
+public function init(temp.super) {
+  this._super = temp.super;
+}
+
+public function delete() {
+  // DELETE method needed
+}

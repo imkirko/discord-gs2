@@ -1,0 +1,181 @@
+/*
+  vars
+  .channels {channel collection}
+  .debug {boolean} - Displays debug only messages
+  .token {string} - set token with login() function only
+  .guilds {guild collection} 
+  .ready {boolean} - client loaded all info
+  .webhooks {webhook collection}
+
+  funcs
+  .login(token)
+  .newRichEmbed()
+  
+  events
+  onReady()
+  onSynced()
+*/
+
+const CACHE_TIME = 3600 * 2; // two hours
+
+/*
+  Predefine collections
+*/
+function onCreated() {
+  this.ready    = false;
+  this.guilds   = new TCollection().init("guilds", this);
+  this.channels = new TCollection().init("channels", this);
+  this.webhooks = new TCollection().init("webhooks", this);
+  //this.users    = new TCollection();
+}
+
+/*
+  Caches app details and joined guilds.
+
+  @param {string} token - Your applications token, optional to include token type.
+*/
+public function login(temp.token) {
+  RC.debug("Client logging in (not really)");
+
+  if (token.starts("Bearer"))
+    return RC.error("Discord class doesn't support bearer token types, only bot");
+
+  if (!token.starts("Bot"))
+    token = "Bot" SPC temp.token;
+    
+  this.token    = temp.token;
+  this.starting = true;
+
+  temp.success = onSyncGuilds();
+  this.scheduleEvent(CACHE_TIME, "onSyncGuilds", null);
+
+  if (temp.success) {
+    this.starting = false;
+    this.ready    = true;
+    trigger("onReady");    
+  }
+}
+
+/*
+  Will begin to cache client and guilds
+
+  @return {boolean} - Was successfull
+*/
+function onSyncGuilds() {
+  if (!cacheClientUser() || !cacheGuilds() || 
+      !cacheChannels()   || !cacheWebhooks()) {
+    return false;
+  }
+
+  trigger("onSynced");
+  RC.debug("Client resynced");
+
+  // If client didn't sync correctly the first time
+  if (!this.ready && this.starting) {
+    this.starting = false;
+    this.ready    = true;
+    trigger("onReady");    
+  }
+  
+  return true;
+}
+
+/*
+  Sync application details
+  
+  @return {boolean} - Successfull or not
+*/
+function cacheClientUser() {
+  temp.req = makeRequest("get", this.endpoints.me);
+  
+  if (checkForError(temp.req) == true) return;
+  
+  temp.vars = temp.req.getdynamicvarnames();
+  for (temp.var : temp.vars)
+    this.user.(@ temp.var) = temp.req.(@ temp.var);
+
+  return true;
+}
+
+/*
+  Sync guilds client is in
+  
+  @return {boolean} - Successfull or not
+*/
+function cacheGuilds() {
+  temp.req = makeRequest("get", this.endpoints.me.guilds);
+
+  if (checkForError(temp.req) == true) return;
+    
+  for (temp.guild : temp.req) {
+    temp.guild.join("discord_guild");
+    temp.guild.init(this);
+    this.guilds.add(temp.guild);
+  }
+  
+  return true;
+}
+
+/*
+  Sync channels from all guilds to the client and guild
+  
+  @return {boolean} - Successfull or not
+*/
+function cacheChannels() {
+  for (temp.guild : this.guilds) {
+    temp.guild.channels = new TCollection().init("channels", temp.guild);
+    
+    temp.url  = format(this.endpoints.guild.channels, temp.guild.id);
+    temp.req = makeRequest("get", temp.url);
+
+    if (checkForError(temp.req) == true) 
+      return;
+      
+    for (temp.channel : temp.req) {
+      temp.channel.join("discord_channel");
+      temp.channel.init(this);
+      this.channels.add(temp.channel);
+      temp.guild.channels.add(temp.channel);
+    }
+  }
+  return true;
+}
+
+/*
+  Sync webhooks from all guilds
+  
+  @return {boolean} - Successfull or not
+*/
+function cacheWebhooks() {
+  for (temp.guild : this.guilds) {
+    temp.guild.webhooks = new TCollection().init("webhooks", temp.guild);
+    
+    temp.url = format(this.endpoints.guild.webhooks, temp.guild.id);
+    temp.req = makeRequest("get", temp.url);
+
+    if (checkForError(temp.req) == true) 
+      return;
+      
+    for (temp.webhook : temp.req) {
+      temp.webhook.join("discord_webhook");
+      temp.webhook.init(this);
+      this.webhooks.add(temp.webhook);
+      temp.guild.webhooks.add(temp.webhook);
+      //todo add to appropriate channel
+    }
+  }
+  
+  return true; 
+}
+
+/*
+  @return TStaticVar
+*/
+public function newRichEmbed() {
+  // yes all this is needed, graal sucks i know.
+  temp.obj = new TStaticVar();
+  temp.obj.base = new TStaticVar();
+  temp.obj.base.embed = new TStaticVar();
+  temp.obj.join("discord_embed");
+  return temp.obj;
+}

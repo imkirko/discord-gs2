@@ -1,0 +1,103 @@
+
+/*
+  @param {string} method - Only supports GET AND POST
+  @param {string} url
+  @param {array} [data]
+  @return {TStaticVar|TStaticVar[]} Object made from the response json data
+*/
+public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
+  if (!(temp.method in {"post", "get"}))
+    return RC.trace("Method must be post or get");
+
+  // Token almost always needed for authentication
+  if (this.token && !this.isinclass("discord_webhook")) temp.data.insert(0, {"token", this.token});
+ 
+  if (temp.method == "get") {
+    temp.url @= "?" @ arrayToQueryString(temp.data);
+    temp.req = get(url, 20);
+  } else if (temp.method == "post") {
+    temp.req = post(url, data, 20);
+  }
+
+  if (temp.debug) {
+    echo("URL:" @ temp.url);
+    echo("Sent data:"  @ temp.data);
+    echo("Request data:" @ temp.req);
+  }
+
+  temp.data = parse(temp.req);
+  return temp.data;
+}
+
+
+/*
+  Convert json into graal object
+
+  @param {string} data
+  @return {TStaticVar|TStaticVar[]}
+*/
+function parse(temp.data) {
+  temp.objects = {};
+  temp.isArray = temp.data.starts("[");
+
+  if (temp.isArray) {
+    temp.objects.loadjsonfromstring(data);
+  } else {
+    temp.json.loadjsonfromstring(data);
+    temp.array = temp.json.savevarstoarray(false);
+    temp.objects.loadvarsfromarray(temp.array);
+  }
+
+  temp.newData = {};
+  for (temp.i = 0; temp.i < (temp.isArray ? temp.objects.size() : 1); temp.i ++) {
+    temp.obj = convertToObj(temp.objects[i]);
+
+    if (temp.isArray)
+      temp.newData.add(temp.obj);
+    else 
+      temp.newData = temp.obj;
+  }
+
+  return newData;
+}
+
+function convertToObj(temp.data) {
+  temp.obj = new TStaticVar();
+  addVars(temp.obj, "", temp.data);
+  return temp.obj;
+}
+
+function addVars(temp.obj, temp.stack, temp.copyObj) {
+  temp.vars = makevar("copyObj" @ stack).getdynamicvarnames();
+  
+  for (temp.var : temp.vars) {
+    makevar("obj" @ temp.stack @ "." @ temp.var) = makevar("copyObj" @ temp.stack @ "." @ temp.var);
+
+    if (makevar("copyObj" @ stack @ "." @ temp.var).getdynamicvarnames().size() > 0) {
+      temp.newStack = "." @ (temp.stack != null ? (temp.stack @ ".") : "") @ temp.var;
+      addVars(temp.obj, temp.newStack, temp.copyObj);
+    }
+  }
+}
+
+public function checkForError(temp.req, temp.msg) {
+  temp.error = getError(temp.req);
+  if (temp.error) {
+    if (temp.msg)
+      RC.log(msg, temp.error);
+    else
+      RC.trace("Http prob: %s\n", temp.error);
+    return true;
+  }
+  return false;
+}
+
+public function getError(temp.req) {
+  if (temp.req.message)
+    return temp.req.message;
+  if (temp.req._misc)
+    return temp.req._misc;
+  if (temp.req == null)
+    return "No response";
+  return false;
+}

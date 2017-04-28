@@ -1,0 +1,54 @@
+
+/*
+  Vars
+  .channels
+  .icon
+  .id
+  .owner
+  .permissions
+  .xmlname
+
+  funcs
+  .getChannels()
+*/
+
+public function init(temp.super) {
+  this._super = temp.super;
+}
+
+/*
+  @return {Channel[]}
+*/
+public function getChannels() {
+  temp.url = format(this._super.endpoints.guild.channels, this.id);
+  temp.req = this._super.makeRequest("get", temp.url);
+  
+  if (!this._super.checkForError(temp.req)) {
+    return temp.req;
+  }
+}
+
+/*
+  Gets webhooks from guild
+  
+  @return {Webhook[]}  
+*/
+public function getWebhooks() {
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.guild.webhooks, this.id), temp.options, false);
+
+  if (!this._super.checkForError(temp.req)) {
+    return temp.req;
+  }
+}
+
+/*
+  todo: fix this
+  Expected "Content-Type" header to be one of set(['application/json']).
+*/
+public function createChannel(temp.options) {
+  temp.url = format(this._super.endpoints.guild.channels, this.id);
+  temp.data = this._super.makeRequest("post", temp.url, temp.options);
+
+  echo(temp.url);
+  echo(temp.data._misc);
+}

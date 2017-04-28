@@ -1,0 +1,37 @@
+
+/*
+  @param {string} idOrUrl - ID of webhook or url of webhook
+  @param {token} [token]  - Token of webhook if not using url
+  @return Boolean of connection status
+*/
+public function connect(temp.idOrUrl, temp.token) {
+  this.setEndpoints();
+  this._super = this; // for compatibility with webhook class
+  
+  if (idOrUrl.pos("ptb.discordapp") != -1) {
+    temp.tokens = temp.idOrUrl.tokenize("/");
+    temp.id    = temp.tokens[temp.tokens.size() - 2];
+    temp.token = temp.tokens[temp.tokens.size() - 1];
+  } else {
+    temp.id    = temp.idOrUrl;
+    temp.token = temp.token;
+  }
+
+  temp.req = makeRequest("get", format(this.endpoints.webhooks.token, temp.id, temp.token), null, false);
+  temp.err = getError(temp.req);
+
+  if (temp.err) {
+    this.ready = false;
+    this.trigger("onFailed", temp.err);
+    return false;
+  } else {
+    this.ready = true;
+    this.join("discord_webhook");
+    temp.vars = temp.req.getdynamicvarnames();
+    for (temp.var : temp.vars) {
+      this.(@ temp.var) = temp.req.(@ temp.var);
+    }
+    this.trigger("onReady");
+    return true;
+  }
+}

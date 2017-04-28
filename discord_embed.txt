@@ -1,0 +1,154 @@
+/*
+  Any url must be valid (have .com, http:// etc.)
+  or embed wont send
+*/
+
+/*
+  temp.embed = Bot.newRichEmbed()
+  .setTitle("Hello!")
+  .setDescription("Some description here")
+  .setURL("http://logindelteria1.graalonline.com:8080")
+  .addField("Test", "this is a field")
+  .setFooter("My footer stinks!", null)
+  .setAuthor("Kirko", null, "https://cdn.discordapp.com/embed/avatars/0.png");
+
+  channel.sendEmbed("Test embed", temp.embed);
+*/
+
+
+/*
+  @param {string} title - Title of embed
+  @return TDiscordEmbed
+*/
+public function setTitle(temp.title) {
+  this.base.embed.title = temp.title;
+
+  return this;
+}
+
+/*
+  @param {string} description - Description of embed
+  @return TDiscordEmbed
+*/
+public function setDescription(temp.description) {
+  this.base.embed.description = temp.description;
+
+  return this;
+}
+
+/*
+  @param {string} url - A valid url
+  @return TDiscordEmbed
+*/
+public function setURL(temp.url) {
+  this.base.embed.url = temp.url;
+
+  return this;
+}
+
+/*
+  @param {date} date - Timestamp of embed content
+  @return TDiscordEmbed
+*/
+public function setTimeStamp(temp.date) {
+  this.base.embed.timestamp = temp.date;
+  
+  return this;
+}
+
+/*
+  @param {number} color - Color code of the embed
+  @return TDiscordEmbed
+*/
+public function setColor(temp.color) {
+  this.base.embed.color = temp.color;
+  
+  return this;
+}
+
+/*
+  @param {string} text
+  @param {string} [icon]
+  @return TDiscordEmbed
+*/
+public function setFooter(temp.text, temp.icon) {
+  this.base.embed.footer = new TStaticVar();
+  this.base.embed.footer.text = temp.text;
+  if (temp.icon) this.base.embed.footer.icon_url = temp.icon;
+
+  return this;
+}
+
+/*
+  @param {string} url - Source url of image
+  @return TDiscordEmbed
+*/
+public function setImage(temp.image) {
+  this.base.embed.image = temp.image;
+  
+  return this;
+}
+
+/*
+  @param {string} url - Source url of thumbnail
+  @return TDiscordEmbed
+*/
+public function setThumbnail(temp.url) {
+  this.base.embed.thumbnail = new TStaticVar();
+  this.base.embed.thumbnail.url = temp.url;
+
+  return this;
+}
+
+/*
+  @param {string} authorName
+  @param {string} [url]
+  @param {string} [icon]
+  @return TDiscordEmbed
+*/
+public function setAuthor(temp.authorName, temp.url, temp.icon) {
+  this.base.embed.author = new TStaticVar();
+  this.base.embed.author.xmlname = authorName;
+  if (temp.url) this.base.embed.author.url = url;
+  if (temp.icon) this.base.embed.author.icon_url = icon;
+
+  return this;
+}
+
+/*
+  @param {string} fieldName
+  @param {string} value
+  @param {boolean} [inline]
+  @return TDiscordEmbed
+*/
+public function addField(temp.fieldName, temp.value, temp.inline) {
+  temp.field = new TStaticVar();
+  temp.field.xmlname = temp.fieldName;
+  temp.field.value   = temp.value;
+  if (temp.inline) temp.field.inline = temp.inline;
+
+  this.base.embed.fields.add(temp.field);
+
+  return this;
+}
+
+/*
+  @return string
+*/
+public function stringify() {
+  temp.json = JSON.toJson(this.base);
+  temp.json = replacetext(temp.json, "xmlname", "name");
+  return temp.json;
+}
+
+// Credit: http://forums.graalonline.com/forums/showthread.php?t=82820
+function replacetext(txt,a,b) { 
+  if (txt.pos(a)<0) return txt; 
+  temp.txtpos = txt.positions(a); 
+  temp.newtxt = txt.substring(0,txtpos[0]); 
+  for (temp.i=0;i<txtpos.size();i++) { 
+    newtxt @= b; 
+    newtxt @= txt.substring(txtpos[i]+a.length(),txt.substring(txtpos[i]+a.length()).pos(a)); 
+  } 
+  return newtxt; 
+}  
