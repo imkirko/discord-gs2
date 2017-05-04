@@ -1,0 +1,139 @@
+
+/*
+  Same as printf but just cooler. cause uknow, im a cool person
+
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function log(temp.msg) {
+  temp.args = this.getArgs(params, 1);
+  echo(format2(temp.msg, temp.args));
+}
+
+/*
+  Will echo depending on assertion test
+
+  @param {boolean} value
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function assert(temp.value, temp.msg) {
+  if (temp.value == true) {
+    temp.args = this.getArgs(params, 2);
+    echo(format2(temp.msg, temp.args));
+  }
+}
+
+/*
+  Will be red... s/o to rc3
+
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function error(temp.msg) {
+  temp.args = this.getArgs(params, 1);
+  echo("#ALERT " @ format2(temp.msg, temp.args));
+  return false;
+}
+
+/*
+  Will be red and flash rc window
+  
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function warn(temp.msg) {
+  temp.args = this.getArgs(params, 1);
+  echo("#ALERTFS " @ format2(temp.msg, temp.args));
+}
+
+/*
+  See time difference from time to timeEnd
+
+  @param {string} event
+*/
+public function time(temp.event) {
+  this.(@ temp.event) = timevar2;
+}
+
+/*
+  Stops the "timer" and echo results
+
+  @param {string} event
+*/
+public function timeEnd(temp.event) {
+  if (this.(@ temp.event)) {
+    printf("%s: %s", temp.event, timevar2 - this.(@ temp.event));
+    this.(@ temp.event) = null;
+    this.clearEmptyVars();
+  }
+}
+
+/*
+  Shows full stack of the calling func in a cool formatted message
+
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function trace(temp.msg) {
+  temp.args    = this.getArgs(params, 1);
+  temp.message = format2("Trace: " @ temp.msg @ "\n", args);
+  
+  temp.callstack = getCallStack(); 
+  for (temp.i = callstack.size() - 2; i >= 0; i --) {
+    temp.cs = callstack[i];
+    temp.message @= "\tat " @ temp.cs.scriptcallobject.name @ "." @ cs.name @ " (" @ temp.cs.scriptline @ ")\n";
+  }
+
+  echo(temp.message);
+}
+
+/*
+  Object calling debug must have debug = true;
+
+  @param {string} msg
+  @param {...string} [params]
+*/
+public function debug(temp.msg) {
+  temp.callstack = getCallStack();
+  temp.obj = temp.callstack[temp.callstack.size() - 2].scriptcallobject;
+  if (temp.obj.debug) {
+    temp.args    = getArgs(params, 1);
+    temp.message = format2("Debugging " @ temp.obj.name @ ": " @ temp.msg @ "\n", temp.args);
+    echo(temp.message);
+  }
+}
+
+/*
+  Shows if calling object has any script errors
+
+  @param {boolean} debugOnly - Wether the calling object must have debug set to true
+*/
+public function showErrors(temp.debugOnly) {
+  temp.callstack = getCallStack();
+  temp.obj = temp.callstack[temp.callstack.size() - 2].scriptcallobject;
+
+  temp.print = false;
+  if (temp.obj.scriptErrors != null)
+    if (temp.debugOnly) {
+      if (temp.obj.debug) 
+        temp.print = true;
+    } else 
+      temp.print = true;
+
+  if (temp.print == true)
+    printf("%s Errors: %s", temp.obj.name, temp.obj.scriptErrors);
+}
+
+function getArgs(temp.p, temp.size) {
+  for (temp.i = 0; temp.i < temp.size; temp.i ++)
+    temp.p.delete(0);
+  return temp.p;
+}
+
+/*
+  @param {string} test - did it
+  @param {boolean} test2 - work?
+  @return Mother fucking returned value
+*/
+function test(temp.test, temp.test2) {}
