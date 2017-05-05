@@ -1,3 +1,18 @@
+/*
+  extends: discord_webhook (when ready)
+
+  vars:
+  .avatar
+  .channel_id
+  .guild_id
+  .id
+  .token
+  .xmlname
+
+  funcs:
+  connect(idOrUrl, token)
+*/
+
 
 /*
   @param {string} idOrUrl - ID of webhook or url of webhook
@@ -10,15 +25,15 @@ public function connect(temp.idOrUrl, temp.token) {
   
   if (idOrUrl.pos("ptb.discordapp") != -1) {
     temp.tokens = temp.idOrUrl.tokenize("/");
-    temp.id    = temp.tokens[temp.tokens.size() - 2];
-    temp.token = temp.tokens[temp.tokens.size() - 1];
+    temp.id     = temp.tokens[temp.tokens.size() - 2];
+    temp.token  = temp.tokens[temp.tokens.size() - 1];
   } else {
     temp.id    = temp.idOrUrl;
     temp.token = temp.token;
   }
 
-  temp.req = makeRequest("get", format(this.endpoints.webhooks.token, temp.id, temp.token), null, false);
-  temp.err = getError(temp.req);
+  temp.req = this.makeRequest("get", format(this.endpoints.webhooks.token, temp.id, temp.token), null, false);
+  temp.err = this.getError(temp.req);
 
   if (temp.err) {
     this.ready = false;
@@ -27,10 +42,13 @@ public function connect(temp.idOrUrl, temp.token) {
   } else {
     this.ready = true;
     this.join("discord_webhook");
-    temp.vars = temp.req.getdynamicvarnames();
+    
+    temp.vars = temp.req.getDynamicVarNames();
+    echo(temp.vars);
     for (temp.var : temp.vars) {
       this.(@ temp.var) = temp.req.(@ temp.var);
     }
+    
     this.trigger("onReady");
     return true;
   }

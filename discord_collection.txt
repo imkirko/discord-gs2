@@ -1,5 +1,11 @@
 
-// Call when creating. like constructor
+/*
+  Call when creating. like a constructor
+
+  @param {string} cName - Name of collection. should match var name
+  @param {TDiscord} superObj - Parent object
+  @return {TCollection} Its self
+*/
 public function init(temp.cName, temp.superObj) {
   // should be private but uknow. graal probs
   this._super = temp.superObj;
@@ -7,8 +13,32 @@ public function init(temp.cName, temp.superObj) {
   return this;
 }
 
-public function clear() {
-  this.clearVars();
+/*
+  @param {string} key
+  @return {*} value of given key
+*/
+public function get(temp.key) {
+  return this.(@ temp.key);
+}
+
+/*
+  @param {string} key
+  @return {boolean} key exist or not
+*/
+public function has(temp.key) {
+  return isObject(this.(@ temp.key));
+}
+
+/*
+  @param {string} prop
+  @param {*} value
+  @return {Object}
+*/
+public function find(temp.prop, temp.value) {
+  for (temp.item : this._super.(@ this._cName))
+    if (temp.item.(@ temp.prop) == temp.value)
+      return temp.item;
+  return this;
 }
 
 // doesn't work, function doesnt pass
@@ -17,19 +47,4 @@ public function forEach(temp.callback) {
     echo(temp.item);
     temp.callback(@ temp.item, temp.item, this._super.(@ this._cName));
   }
-}
-
-public function get(temp.key) {
-  return this.(@ temp.key);
-}
-
-public function has(temp.key) {
-  return isObject(this.(@ temp.key));
-}
-
-public function find(temp.prop, temp.value) {
-  for (temp.item : this._super.(@ this._cName))
-    if (temp.item.(@ temp.prop) == temp.value)
-      return temp.item;
-  return this;
 }

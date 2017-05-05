@@ -1,0 +1,28 @@
+/*
+  extends: discord_channel
+  
+  vars:
+  .guild_id
+  .position
+  .permission_overwrites  
+*/
+
+/*
+  todo: fix, Expected "Content-Type" header to be one of set(['application/json'])
+
+  Creates invite link for channel
+
+  @param {Array.<Array.<*>>} options - Options for invites
+*/
+public function createInvite(temp.options) {
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.invites, this.id), temp.options, false);
+  if (!this._super.checkForError(temp.req)) {
+    temp.req.join("discord_channel_guild_invite");
+    return temp.req;
+  }  
+}
+
+// Need PUT or PACTH method ;(
+public function setName(temp.newName) {}
+public function setPosition(temp.newPos) {}
+public function setTopic(temp.newTopic) {}

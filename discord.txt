@@ -14,6 +14,7 @@
   events
   onReady()
   onSynced()
+  onError(error)
 */
 
 const CACHE_TIME = 3600 * 2; // two hours

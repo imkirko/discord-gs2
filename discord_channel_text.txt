@@ -33,7 +33,7 @@ public function sendEmbed(temp.content, temp.embedObj) {
   if (temp.embedObj.isinclass("discord_embed")) {
     temp.embedObj.base.content = temp.content;
     temp.json = temp.embedObj.stringify();
-    return sendMessage(temp.content, {
+    return this.sendMessage(temp.content, {
       {"payload_json", temp.json}
     });
   }
@@ -48,7 +48,7 @@ public function sendEmbed(temp.content, temp.embedObj) {
 */
 public function sendCode(temp.language, temp.code) {
   temp.msg = format("```%s\n%s\n```", temp.language, temp.code);
-  return sendMessage(temp.msg);
+  return this.sendMessage(temp.msg);
 }
 
 /*
@@ -64,7 +64,21 @@ public function triggerTyping() {
 }
 
 /*
-  todo: fix this Expected \"Content-Type\" header to be one of set(['application/json']).
+  @return {Webhooks[]}
+*/
+public function getWebhooks() {
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, false);
+  if (!this._super.checkForError(temp.req)) {
+    return temp.req;
+  }
+}
+
+/*
+  Unfinished area
+*/
+
+/*
+  error: Expected "Content-Type" header to be one of set(['application/json'])
   @param {string} webhookName - Name of the webhook
   @param {} avatar - gotta fix this
 */
@@ -74,21 +88,13 @@ public function createWebhook(temp.webhookName, temp.avatar) {
     {"avatar", "https://cdn.discordapp.com/embed/avatars/0.png"}
   };
   temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.webhooks, this.id), temp.options, true);
-
   if (!this._super.checkForError(temp.req)) {
     return temp.req;
   }
 }
 
-public function getWebhooks() {
-  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, false);
 
-  if (!this._super.checkForError(temp.req)) {
-    return temp.req;
-  }
-}
-
-// todo: fix this
+// todo: finish
 public function sendServerCode(temp.type, temp.scriptName) {
   temp.file = temp.scriptName;
   temp.type = getScriptType(temp.type);
@@ -96,14 +102,14 @@ public function sendServerCode(temp.type, temp.scriptName) {
   switch (temp.type) {
     case "npc":
       temp.folder = "npcs/";
-      temp.file = "npc" @ escapefilename(temp.file);
+      temp.file = "npc" @ escapeFileName(temp.file);
       temp.filterStart = "NPCSCRIPT";
       temp.filterEnd   = "NPCSCRIPTEND";
       break;
 
     case "weapon":
       temp.folder = "weapons/";
-      temp.file = "weapon" @ escapefilename(temp.file);
+      temp.file = "weapon" @ escapeFileName(temp.file);
       temp.filterStart = "SCRIPT";
       temp.filterEnd   = "SCRIPTEND";
       break;
@@ -142,11 +148,11 @@ public function sendServerCode(temp.type, temp.scriptName) {
     temp.err = "Code is longer than 2000 characters";
 
   if (temp.err) {
-    RC.trace("Can't send code: %s\n", temp.error);
+    this._super.triggerError("Can't send code: %s\n", temp.error);
     return;
   }
   
-  return sendCode("js", temp.fullText);
+  return this.sendCode("js", temp.fullText);
 }
 
 function getScriptType(temp.type) {

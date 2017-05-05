@@ -12,6 +12,8 @@ function onCreated() {
   if (this.type != null) {
     this.join("discord_channel_" @ this.type);
   }
+
+  this.join("discord_channel_" @ (this.is_private == true ? "private" : "guild"));
 }
 
 public function init(temp.super) {

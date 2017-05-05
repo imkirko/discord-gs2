@@ -7,7 +7,7 @@
 */
 public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
   if (!(temp.method in {"post", "get"}))
-    return RC.trace("Method must be post or get");
+    return triggerError("Method must be post or get");
 
   // Token almost always needed for authentication
   if (this.token && !this.isinclass("discord_webhook")) temp.data.insert(0, {"token", this.token});
@@ -80,13 +80,10 @@ function addVars(temp.obj, temp.stack, temp.copyObj) {
   }
 }
 
-public function checkForError(temp.req, temp.msg) {
+public function checkForError(temp.req) {
   temp.error = getError(temp.req);
   if (temp.error) {
-    if (temp.msg)
-      RC.log(msg, temp.error);
-    else
-      RC.trace("Http prob: %s\n", temp.error);
+      this.triggerError(temp.error);
     return true;
   }
   return false;
@@ -101,3 +98,6 @@ public function getError(temp.req) {
     return "No response";
   return false;
 }
+
+public function triggerError(temp.error) 
+  this.trigger("onError", temp.error);
