@@ -1,5 +1,3 @@
-// DBNPC
-
 function onCreated() {
   this.clearVars();
 
