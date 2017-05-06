@@ -1,10 +1,10 @@
 
 /*
-  Call when creating. like a constructor
+  Call when creating. like a constructor but gs2 version
 
   @param {string} cName - Name of collection. should match var name
-  @param {TDiscord} superObj - Parent object
-  @return {TCollection} Its self
+  @param {TDiscord} superObj - Bot
+  @return {TCollection} - this
 */
 public function init(temp.cName, temp.superObj) {
   // should be private but uknow. graal probs
@@ -41,10 +41,39 @@ public function find(temp.prop, temp.value) {
   return this;
 }
 
-// doesn't work, function doesnt pass
-public function forEach(temp.callback) {
+/*
+  If collection is empty
+
+  @return {boolean} - empty?
+*/
+public function isEmpty() {
+  return (this.size() <= 0);
+}
+
+
+/*
+  In progress area
+*/
+
+public function forEach(temp.func) {
   for (temp.item : this._super.(@ this._cName)) {
     echo(temp.item);
-    temp.callback(@ temp.item, temp.item, this._super.(@ this._cName));
+    temp.func(@ temp.item, temp.item, this._super.(@ this._cName));
   }
+}
+
+public function filter(temp.func) {
+  if (temp.func.objectType() != "TScriptFunction") {
+    return false;
+  }
+
+  temp.results = "";
+  
+  for (temp.i = 0; temp.i < this.size(); temp.i ++) {
+    if (temp.func(this[i]) == true) {
+      temp.results.add(this[i]);
+    }
+  }
+
+  return temp.results;
 }

@@ -1,0 +1,6 @@
+
+public function init(temp.super) {
+  this._super = temp.super;
+
+  //echo("member: " @ this.user.username);
+}

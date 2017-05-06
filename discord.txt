@@ -6,15 +6,19 @@
   .guilds {guild collection} 
   .ready {boolean} - client loaded all info
   .webhooks {webhook collection}
+  .users {user collection} - All users
 
   funcs
   .login(token)
   .newRichEmbed()
   
   events
-  onReady()
-  onSynced()
+  *onReady()
+  *onSynced()
   onError(error)
+
+  Notes:
+  * Not all data will be ready when called
 */
 
 const CACHE_TIME = 3600 * 2; // two hours
@@ -24,10 +28,10 @@ const CACHE_TIME = 3600 * 2; // two hours
 */
 function onCreated() {
   this.ready    = false;
-  this.guilds   = new TCollection().init("guilds", this);
+  this.guilds   = new TCollection().init("guilds",   this);
   this.channels = new TCollection().init("channels", this);
   this.webhooks = new TCollection().init("webhooks", this);
-  //this.users    = new TCollection();
+  this.users    = new TCollection().init("users",    this);
 }
 
 /*
@@ -43,7 +47,7 @@ public function login(temp.token) {
 
   if (!token.starts("Bot"))
     token = "Bot" SPC temp.token;
-    
+  
   this.token    = temp.token;
   this.starting = true;
 
@@ -62,23 +66,33 @@ public function login(temp.token) {
 
   @return {boolean} - Was successfull
 */
-function onSyncGuilds() {
-  if (!cacheClientUser() || !cacheGuilds() || 
-      !cacheChannels()   || !cacheWebhooks()) {
+public function onSyncGuilds() {
+  // Sync main data
+  if (!this.cacheClientUser() || !this.cacheGuilds() || 
+      !this.cacheChannels()) {
+    this._syncAttempts ++;
     return false;
   }
 
-  trigger("onSynced");
+  // Continue to sync other data w/o interruption
+  this.scheduleEvent(this, "onSyncContinue", null);
+
+  this.trigger("onSynced");
   RC.debug("Client resynced");
 
   // If client didn't sync correctly the first time
   if (!this.ready && this.starting) {
     this.starting = false;
     this.ready    = true;
-    trigger("onReady");    
+    this.trigger("onReady");    
   }
   
   return true;
+}
+
+function onSyncContinue() {
+  this.cacheWebhooks();
+  this.cacheUsers();
 }
 
 /*
@@ -87,9 +101,9 @@ function onSyncGuilds() {
   @return {boolean} - Successfull or not
 */
 function cacheClientUser() {
-  temp.req = makeRequest("get", this.endpoints.me);
+  temp.req = this.makeRequest("get", this.endpoints.me);
   
-  if (checkForError(temp.req) == true) return;
+  if (this.checkForError(temp.req) == true) return;
   
   temp.vars = temp.req.getdynamicvarnames();
   for (temp.var : temp.vars)
@@ -104,9 +118,9 @@ function cacheClientUser() {
   @return {boolean} - Successfull or not
 */
 function cacheGuilds() {
-  temp.req = makeRequest("get", this.endpoints.me.guilds);
+  temp.req = this.makeRequest("get", this.endpoints.me.guilds);
 
-  if (checkForError(temp.req) == true) return;
+  if (this.checkForError(temp.req) == true) return;
     
   for (temp.guild : temp.req) {
     temp.guild.join("discord_guild");
@@ -118,16 +132,17 @@ function cacheGuilds() {
 }
 
 /*
-  Sync channels from all guilds to the client and guild
+  Sync all channel types
   
   @return {boolean} - Successfull or not
 */
 function cacheChannels() {
+  // Guild channels
   for (temp.guild : this.guilds) {
     temp.guild.channels = new TCollection().init("channels", temp.guild);
     
-    temp.url  = format(this.endpoints.guild.channels, temp.guild.id);
-    temp.req = makeRequest("get", temp.url);
+    temp.url = format(this.endpoints.guild.channels, temp.guild.id);
+    temp.req = this.makeRequest("get", temp.url);
 
     if (checkForError(temp.req) == true) 
       return;
@@ -139,6 +154,19 @@ function cacheChannels() {
       temp.guild.channels.add(temp.channel);
     }
   }
+
+  // Private channels
+  temp.req = this.makeRequest("get", this.endpoints.me.channels, "", false);
+  
+  if (checkForError(temp.req) == true) 
+    return;
+
+  for (temp.channel : temp.req) {
+    temp.channel.join("discord_channel");
+    temp.channel.init(this);
+    this.channels.add(temp.channel);
+  }
+  
   return true;
 }
 
@@ -152,17 +180,17 @@ function cacheWebhooks() {
     temp.guild.webhooks = new TCollection().init("webhooks", temp.guild);
     
     temp.url = format(this.endpoints.guild.webhooks, temp.guild.id);
-    temp.req = makeRequest("get", temp.url);
-
-    if (checkForError(temp.req) == true) 
-      return;
-      
+    temp.req = this.makeRequest("get", temp.url, "", false);
+    
+    if (this.checkForError(temp.req) == true) 
+      return false;
+    
     for (temp.webhook : temp.req) {
       temp.webhook.join("discord_webhook");
       temp.webhook.init(this);
       this.webhooks.add(temp.webhook);
       temp.guild.webhooks.add(temp.webhook);
-      //todo add to appropriate channel
+      //TODO: Add to appropriate channel
     }
   }
   
@@ -170,12 +198,43 @@ function cacheWebhooks() {
 }
 
 /*
+  Sync users and members
+  
+  @return {boolean} - Successfull or not  
+*/
+function cacheUsers() {
+  for (temp.guild : this.guilds) {
+    temp.guild.members = new TCollection().init("members", temp.guild);
+
+    temp.req = this.makeRequest("get", format(this.endpoints.guild.members, temp.guild.id), {
+      {"limit", 1000}
+    }, false);
+    
+    if (this.checkForError(temp.req) == true) 
+      return false;
+    
+    for (temp.member : temp.req) {
+      temp.member.join("discord_member");
+      temp.member.user.join("discord_user");
+      temp.member.user.init(this);
+      temp.member.init(this);
+      this.users.add(temp.member.user);
+      temp.guild.members.add(temp.member);
+    }
+  }
+
+  return true;
+}
+
+/*
+  Emebed object that can be parsed into json string
+
   @return TStaticVar
 */
 public function newRichEmbed() {
-  // yes all this is needed, graal sucks i know.
-  temp.obj = new TStaticVar();
-  temp.obj.base = new TStaticVar();
+  // yes all this is needed
+  temp.obj            = new TStaticVar();
+  temp.obj.base       = new TStaticVar();
   temp.obj.base.embed = new TStaticVar();
   temp.obj.join("discord_embed");
   return temp.obj;

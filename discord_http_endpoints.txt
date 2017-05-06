@@ -16,6 +16,7 @@ public function setEndpoints() {
     this.avatar           = BASE @ "/users/%s/avatars/%s.%s";
     this.me               = BASE @ "/users/@me";
     this.me.guilds        = this.me @ "/guilds";
+    this.me.channels      = this.me @ "/channels";
 
     this.guilds           = BASE @ "/guilds";
     this.guild            = this.guilds @ "/%s";

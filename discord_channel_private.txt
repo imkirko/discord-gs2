@@ -1,0 +1,17 @@
+
+/*
+  extends: discord_channel
+
+  vars:
+  .recipient {user}
+  
+  funcs:
+  .toString()
+*/
+
+/*
+  Get recipient instead of channel object
+*/
+public function toString() {
+  return this.recipient.toString();
+}

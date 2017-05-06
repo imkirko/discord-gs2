@@ -1,5 +1,5 @@
 /*
-  Any url must be valid (have .com, http:// etc.)
+  All urls must be valid (include: .com, http:, etc.)
   or embed wont send
 */
 
@@ -7,12 +7,12 @@
   temp.embed = Bot.newRichEmbed()
   .setTitle("Hello!")
   .setDescription("Some description here")
-  .setURL("http://logindelteria1.graalonline.com:8080")
+  .setURL("http://google.com")
   .addField("Test", "this is a field")
   .setFooter("My footer stinks!", null)
   .setAuthor("Kirko", null, "https://cdn.discordapp.com/embed/avatars/0.png");
 
-  channel.sendEmbed("Test embed", temp.embed);
+  <channel>.sendEmbed("Test embed", temp.embed);
 */
 
 
@@ -130,6 +130,15 @@ public function addField(temp.fieldName, temp.value, temp.inline) {
   this.base.embed.fields.add(temp.field);
 
   return this;
+}
+
+/*
+  Easier way to get object. Works well with "with (obj.getEmbed()) {}"
+  
+  @return {object} - Embed object 
+*/
+public function getEmbed() {
+  return this.base.embed;
 }
 
 /*

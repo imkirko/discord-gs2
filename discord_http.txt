@@ -1,31 +1,32 @@
 
 /*
-  @param {string} method - Only supports GET AND POST
+  Makes http request
+  
+  @param {string} method - GET or POST
   @param {string} url
   @param {array} [data]
   @return {TStaticVar|TStaticVar[]} Object made from the response json data
 */
 public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
   if (!(temp.method in {"post", "get"}))
-    return triggerError("Method must be post or get");
+    return this.triggerError("Method must be post or get");
 
   // Token almost always needed for authentication
-  if (this.token && !this.isinclass("discord_webhook")) temp.data.insert(0, {"token", this.token});
- 
+  if (this.token != "" && !this.isinclass("discord_webhook")) 
+    temp.data.insert(0, {"token", this.token});
+
   if (temp.method == "get") {
     temp.url @= "?" @ arrayToQueryString(temp.data);
-    temp.req = get(url, 20);
+    temp.req = this.get(temp.url, 20);
   } else if (temp.method == "post") {
-    temp.req = post(url, data, 20);
+    temp.req = this.post(temp.url, temp.data, 20);
   }
 
   if (temp.debug) {
-    echo("URL:" @ temp.url);
-    echo("Sent data:"  @ temp.data);
-    echo("Request data:" @ temp.req);
+    printf("URL: %s\nSent Data: %s\nRequest Data: %s" @ temp.url, temp.data, temp.req);
   }
 
-  temp.data = parse(temp.req);
+  temp.data = this.parse(temp.req);
   return temp.data;
 }
 
@@ -50,8 +51,9 @@ function parse(temp.data) {
 
   temp.newData = {};
   for (temp.i = 0; temp.i < (temp.isArray ? temp.objects.size() : 1); temp.i ++) {
-    temp.obj = convertToObj(temp.objects[i]);
-
+    temp.obj = new TStaticVar();
+    temp.obj.copyFrom(temp.objects[i]);
+    
     if (temp.isArray)
       temp.newData.add(temp.obj);
     else 
@@ -59,25 +61,6 @@ function parse(temp.data) {
   }
 
   return newData;
-}
-
-function convertToObj(temp.data) {
-  temp.obj = new TStaticVar();
-  addVars(temp.obj, "", temp.data);
-  return temp.obj;
-}
-
-function addVars(temp.obj, temp.stack, temp.copyObj) {
-  temp.vars = makevar("copyObj" @ stack).getdynamicvarnames();
-  
-  for (temp.var : temp.vars) {
-    makevar("obj" @ temp.stack @ "." @ temp.var) = makevar("copyObj" @ temp.stack @ "." @ temp.var);
-
-    if (makevar("copyObj" @ stack @ "." @ temp.var).getdynamicvarnames().size() > 0) {
-      temp.newStack = "." @ (temp.stack != null ? (temp.stack @ ".") : "") @ temp.var;
-      addVars(temp.obj, temp.newStack, temp.copyObj);
-    }
-  }
 }
 
 public function checkForError(temp.req) {

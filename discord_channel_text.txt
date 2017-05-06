@@ -4,6 +4,13 @@
   vars
   .last_message_id
   .topic
+
+  funcs:
+  .sendMessage(content, options)
+  .sendEmbed(content, embed)
+  .sendCode(language, content)
+  .triggerTyping()
+  .getWebhooks()
 */
 
 /*
@@ -64,7 +71,7 @@ public function triggerTyping() {
 }
 
 /*
-  @return {Webhooks[]}
+  @return {webhook[]}
 */
 public function getWebhooks() {
   temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, false);
@@ -74,6 +81,23 @@ public function getWebhooks() {
 }
 
 /*
+  Gets pinned messages of channel
+
+  @return {message[]}
+*/
+public function getPins() {
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.pins, this.id), temp.options, false);
+  if (!this._super.checkForError(temp.req)) {
+    for (temp.msg : temp.req) {
+      temp.msg.join("discord_message");
+    }
+    return temp.req;
+  }  
+}
+
+
+/*
+  todo:
   Unfinished area
 */
 
@@ -93,8 +117,6 @@ public function createWebhook(temp.webhookName, temp.avatar) {
   }
 }
 
-
-// todo: finish
 public function sendServerCode(temp.type, temp.scriptName) {
   temp.file = temp.scriptName;
   temp.type = getScriptType(temp.type);

@@ -1,0 +1,38 @@
+
+public function init(temp.super) {
+  this._super = temp.super;
+}
+
+/*
+  Formats user into a mention
+  
+  @return {string}
+*/
+public function toString() {
+  return format("<@%s>", this.id);
+}
+
+/*
+  Formats user into a non-mention w/ user data
+
+  @return {string}
+*/
+public function toUserString() {
+  return format("%s #%s", this.username, this.discriminator);
+}
+
+/*
+  Gets dm channel between user and client
+  You can then treat that as a regular text channel
+  
+  @return {channel_private}
+*/
+public function getDMChannel() {
+  for (temp.channel : this._super.channels) {
+    if (temp.channel.is_private) {
+      if (temp.channel.recipient.id == this.id)
+        return temp.channel;
+    }
+  }
+  return false;
+}

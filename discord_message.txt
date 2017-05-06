@@ -1,6 +1,24 @@
 
-function onCreated() {
-  echo("joined: message");
+/*
+  vars:
+  .id {string}
+  .channel_id {string}
+  .author {user}
+  .content {string}
+  .
+
+  funcs:
+  .toString()
+*/
+
+
+/*
+  Shows formatted message content
+
+  @return {string}
+*/
+public function toString() {
+  return format("%s: %s", this.author.username, this.content);
 }
 
 // IDK how to do other http methods
@@ -9,3 +27,7 @@ public function delete() {}
 public function edit(temp.content, temp.options) {}
 
 public function addReaction(temp.emojiNameOrID) {}
+
+public function pin() {}
+
+public function unPin() {}
