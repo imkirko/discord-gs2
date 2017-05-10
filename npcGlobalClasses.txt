@@ -1,10 +1,23 @@
+GRNPC001
+NAME GlobalClasses
+ID 1003
+TYPE OBJECT
+SCRIPTER Kirko
+STARTLEVEL server.nw
+STARTX 30.5
+STARTY 30
+LEVEL server.nw
+X 30.5
+Y 30
+NPCSCRIPT
+
 function onCreated() {
   this.clearVars();
 
   // "T" is not needed but it looks cool
-  createClass("TDiscord", "TStaticVar", {"discord", "discord_embed", "discord_http_endpoints", "discord_http", "func_http"});
+  createClass("TDiscord", "TStaticVar", {"discord", "discord_embed", "discord_http_endpoints", "discord_http"});
   createClass("TCollection", "TStaticVar", {"discord_collection"});
-  createClass("TWebhookClient", "TStaticVar", {"discord_webhook_client", "discord_embed", "discord_http_endpoints", "discord_http", "func_http"});
+  createClass("TWebhookClient", "TStaticVar", {"discord_webhook_client", "discord_embed", "discord_http_endpoints", "discord_http"});
 
   RC.showErrors();
 }
@@ -16,4 +29,6 @@ function createClass(className, type, extendedClasses) {
   this.(@ className) = new (@ type)(@ className);
   for (temp.c : extendedClasses)
     this.(@ className).join(temp.c);
+  //this.(@ className).joinedclasses = extendedClasses; // doesnt call onCreated()
 }
+NPCSCRIPTEND

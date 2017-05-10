@@ -1,13 +1,16 @@
 
+
 /*
   Makes http request
   
   @param {string} method - GET or POST
   @param {string} url
-  @param {array} [data]
+  @param {string[]} [data]
+  @param {string[]} [headers]
+  @params {boolean} [debug]
   @return {TStaticVar|TStaticVar[]} Object made from the response json data
 */
-public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
+public function makeRequest(temp.method, temp.url, temp.data, temp.headers, temp.jsonData, temp.debug) {
   if (!(temp.method in {"post", "get"}))
     return this.triggerError("Method must be post or get");
 
@@ -16,14 +19,14 @@ public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
     temp.data.insert(0, {"token", this.token});
 
   if (temp.method == "get") {
-    temp.url @= "?" @ arrayToQueryString(temp.data);
-    temp.req = this.get(temp.url, 20);
+    temp.url @= "?" @ this.arrayToQueryString(temp.data);
+    temp.req = this.get(temp.url, temp.headers);
   } else if (temp.method == "post") {
-    temp.req = this.post(temp.url, temp.data, 20);
+    temp.req = this.post(temp.url, temp.data, temp.headers, temp.jsonData);
   }
 
   if (temp.debug) {
-    printf("URL: %s\nSent Data: %s\nRequest Data: %s" @ temp.url, temp.data, temp.req);
+    printf("URL: %s\nSent Data: %s\nRequest Data: %s", temp.url, temp.data, temp.req);
   }
 
   temp.data = this.parse(temp.req);
@@ -32,7 +35,7 @@ public function makeRequest(temp.method, temp.url, temp.data, temp.debug) {
 
 
 /*
-  Convert json into graal object
+  Convert json into graal object(s)
 
   @param {string} data
   @return {TStaticVar|TStaticVar[]}
@@ -66,7 +69,7 @@ function parse(temp.data) {
 public function checkForError(temp.req) {
   temp.error = getError(temp.req);
   if (temp.error) {
-      this.triggerError(temp.error);
+    this.triggerError(temp.error);
     return true;
   }
   return false;
@@ -82,5 +85,53 @@ public function getError(temp.req) {
   return false;
 }
 
-public function triggerError(temp.error) 
-  this.trigger("onError", temp.error);
+/*
+  Below is a edit of 
+  http://forums.graalonline.com/forums/showthread.php?t=134265118
+*/
+function get(temp.url, temp.headers) {
+  temp.req = new TCURLRequest();
+  temp.req.url = temp.url;
+  temp.req.headers = temp.headers;
+ 
+  return this.getDataFromRequest(temp.req);
+}
+
+function post(temp.url, temp.data, temp.headers, temp.jsonData) {
+  temp.dataString = this.arrayToQueryString(temp.data);
+  
+  temp.req = new TCURLRequest();
+  temp.req.url = temp.url;
+  if (temp.jsonData != null) temp.req.url @= "?" @ temp.dataString;
+  
+  temp.req.headers = temp.headers;
+  
+  temp.req.post = true;
+  temp.req.postData = (temp.jsonData != null ? temp.jsonData : temp.dataString);//"{\"name\": \"Delt\"}";
+
+  return this.getDataFromRequest(temp.req);
+}
+ 
+// helper functions
+function getDataFromRequest(temp.req) {
+  // send request and wait for data
+  temp.req.sendRequest();
+ 
+  waitfor(temp.req, "onReceiveData", 20);
+ 
+  temp.data = temp.req.data;
+  temp.req.destroy();
+ 
+  return temp.data;
+}
+ 
+public function arrayToQueryString(temp.dataArray) {
+  temp.queryString = "";
+ 
+  for (temp.dataItem : temp.dataArray) {
+    temp.queryString @=
+      "&" @ urlencode(temp.dataItem[0]) @ "=" @ urlencode(temp.dataItem[1]);
+  }
+ 
+  return temp.queryString.substring(1);
+}

@@ -1,6 +1,17 @@
 /*
   All urls must be valid (include: .com, http:, etc.)
   or embed wont send
+
+  funcs:
+  .setTitle(title)
+  .setDescription(description)
+  .setURL(url)
+  .setTimeStamp(date) - not done
+  .setColor(decimal color)
+  .setFooter(text, icon)
+  .setThumbnail(url)
+  .setAuthor(name, url, icon)
+  .addField(name, value, inline)
 */
 
 /*
@@ -57,7 +68,9 @@ public function setTimeStamp(temp.date) {
 }
 
 /*
-  @param {number} color - Color code of the embed
+  todo: Allow conversions from hex
+  
+  @param {number} color - Decimal number
   @return TDiscordEmbed
 */
 public function setColor(temp.color) {

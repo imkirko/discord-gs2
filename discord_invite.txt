@@ -1,0 +1,12 @@
+
+/*
+  The URL, duh
+
+  @return {string} - Code formated in URL
+*/
+public function getURL()
+  return format("https://discord.gg/%s", this.code);
+
+
+// DELETE method needed
+public function delete() {}

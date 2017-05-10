@@ -22,7 +22,7 @@
 */
 public function sendMessage(temp.message, temp.options) {
   temp.options.add({"content", temp.message});
-  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.messages, this.id), temp.options, false);
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.messages, this.id), temp.options, null, null, false);
   if (!this._super.checkForError(temp.req)) {
     temp.req.join("discord_message");
     return temp.req;
@@ -37,12 +37,14 @@ public function sendMessage(temp.message, temp.options) {
   @return {Message}
 */
 public function sendEmbed(temp.content, temp.embedObj) {
-  if (temp.embedObj.isinclass("discord_embed")) {
+  if (temp.embedObj.isInClass("discord_embed")) {
     temp.embedObj.base.content = temp.content;
     temp.json = temp.embedObj.stringify();
     return this.sendMessage(temp.content, {
       {"payload_json", temp.json}
     });
+  } else {
+    this._super.triggerError("Must pass an embed object");
   }
 }
 
@@ -64,9 +66,28 @@ public function sendCode(temp.language, temp.code) {
   @return {boolean} was succesful
 */
 public function triggerTyping() {
-  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.typing, this.id), null, false);
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.typing, this.id), null, null, null, false);
   if (!this._super.checkForError(temp.req)) {
     return true;
+  }
+}
+
+/*
+  Creates a new webhook for current channel
+  
+  @param {string} webhookName - Name of the webhook
+  @return {webhook}
+*/
+public function createWebhook(temp.webhookName) {
+  temp.headers = "Content-Type: application/json";
+  temp.options = {
+    {"name", temp.webhookName}
+  };
+  temp.jsonData = "{\"name\": \"" @ temp.webhookName @ "\"}";
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.webhooks, this.id), temp.options, temp.headers, temp.jsonData, false);
+  if (!this._super.checkForError(temp.req)) {
+    temp.req.join("discord_webhook");
+    return temp.req;
   }
 }
 
@@ -74,8 +95,11 @@ public function triggerTyping() {
   @return {webhook[]}
 */
 public function getWebhooks() {
-  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, false);
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.webhooks, this.id), temp.options, null, null, false);
   if (!this._super.checkForError(temp.req)) {
+    for (temp.webhook : temp.req) {
+      temp.webhook.join("discord_webhook");
+    }
     return temp.req;
   }
 }
@@ -86,7 +110,7 @@ public function getWebhooks() {
   @return {message[]}
 */
 public function getPins() {
-  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.pins, this.id), temp.options, false);
+  temp.req = this._super.makeRequest("get", format(this._super.endpoints.channel.pins, this.id), temp.options, null, null, false);
   if (!this._super.checkForError(temp.req)) {
     for (temp.msg : temp.req) {
       temp.msg.join("discord_message");
@@ -96,26 +120,12 @@ public function getPins() {
 }
 
 
+
+
 /*
   todo:
   Unfinished area
 */
-
-/*
-  error: Expected "Content-Type" header to be one of set(['application/json'])
-  @param {string} webhookName - Name of the webhook
-  @param {} avatar - gotta fix this
-*/
-public function createWebhook(temp.webhookName, temp.avatar) {
-  temp.options = {
-    {"name", temp.webhookName},
-    {"avatar", "https://cdn.discordapp.com/embed/avatars/0.png"}
-  };
-  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.webhooks, this.id), temp.options, true);
-  if (!this._super.checkForError(temp.req)) {
-    return temp.req;
-  }
-}
 
 public function sendServerCode(temp.type, temp.scriptName) {
   temp.file = temp.scriptName;

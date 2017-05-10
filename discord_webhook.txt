@@ -3,13 +3,21 @@ public function init(temp.super) {
   this._super = temp.super;
 }
 
+/*
+  Sends text based message
+  
+  @param {string} message - Content of the message
+  @param {string[]} [options] - Message parameters
+  @return {Message}
+*/
 public function sendMessage(temp.message, temp.options) {
   temp.options.add({"content", temp.message});
   temp.options.add({"wait", true});
   
-  temp.req = this._super.makeRequest("post", format(this._super.endpoints.webhooks.token, this.id, this.token), temp.options, false);
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.webhooks.token, this.id, this.token), temp.options, null, null, false);
 
   if (!this._super.checkForError(temp.req)) {
+    temp.req.join("discord_message");
     return temp.req;
   }
 }

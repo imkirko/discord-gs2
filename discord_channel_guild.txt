@@ -8,16 +8,18 @@
 */
 
 /*
-  todo: fix, Expected "Content-Type" header to be one of set(['application/json'])
-
   Creates invite link for channel
 
-  @param {Array.<Array.<*>>} options - Options for invites
+  @param {integer} [maxAge=86400 (24 hours)] - Duration of invite in seconds before expiry, or 0 for never
+  @param {integer} [maxUses=0] - Max number of uses or 0 for unlimited
 */
-public function createInvite(temp.options) {
-  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.invites, this.id), temp.options, false);
+public function createInvite(temp.maxAge, temp.maxUses) {
+  temp.headers = "Content-Type: application/json";
+  temp.jsonData = "{\"max_age\": " @ (temp.maxAge.type() == -1 ? 86400 : temp.maxAge) @ ", \"max_uses\": " @ temp.maxUses @ "}";
+  temp.req = this._super.makeRequest("post", format(this._super.endpoints.channel.invites, this.id), temp.options, temp.headers, temp.jsonData, false);
+
   if (!this._super.checkForError(temp.req)) {
-    temp.req.join("discord_channel_guild_invite");
+    temp.req.join("discord_invite");
     return temp.req;
   }  
 }

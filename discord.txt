@@ -1,7 +1,7 @@
 /*
   vars
   .channels {channel collection}
-  .debug {boolean} - Displays debug only messages
+  .debug {boolean} - Displays debug messages
   .token {string} - set token with login() function only
   .guilds {guild collection} 
   .ready {boolean} - client loaded all info
@@ -47,30 +47,34 @@ public function login(temp.token) {
 
   if (!token.starts("Bot"))
     token = "Bot" SPC temp.token;
-  
+
   this.token    = temp.token;
   this.starting = true;
 
+  this._syncAttempts = 0;
   temp.success = onSyncGuilds();
-  this.scheduleEvent(CACHE_TIME, "onSyncGuilds", null);
 
   if (temp.success) {
     this.starting = false;
     this.ready    = true;
-    trigger("onReady");    
+    
+    this.trigger("onReady");
+    this.scheduleEvent(CACHE_TIME, "onSyncGuilds", null);
   }
 }
 
 /*
-  Will begin to cache client and guilds
+  Will begin to cache client and guild data
 
   @return {boolean} - Was successfull
 */
 public function onSyncGuilds() {
   // Sync main data
-  if (!this.cacheClientUser() || !this.cacheGuilds() || 
-      !this.cacheChannels()) {
+  if (!this.cacheClientUser() || !this.cacheGuilds() || !this.cacheChannels()) {
     this._syncAttempts ++;
+    temp.seconds = 15 * this._syncAttempts;
+    this.triggerError(format("Failed to sync, will try again in %s", temp.seconds));
+    this.scheduleEvent(temp.seconds, "onSyncGuilds", null);
     return false;
   }
 
@@ -80,7 +84,7 @@ public function onSyncGuilds() {
   this.trigger("onSynced");
   RC.debug("Client resynced");
 
-  // If client didn't sync correctly the first time
+  // First time syncing
   if (!this.ready && this.starting) {
     this.starting = false;
     this.ready    = true;
@@ -101,7 +105,7 @@ function onSyncContinue() {
   @return {boolean} - Successfull or not
 */
 function cacheClientUser() {
-  temp.req = this.makeRequest("get", this.endpoints.me);
+  temp.req = this.makeRequest("get", this.endpoints.me, null, null, null, false);
   
   if (this.checkForError(temp.req) == true) return;
   
@@ -118,7 +122,7 @@ function cacheClientUser() {
   @return {boolean} - Successfull or not
 */
 function cacheGuilds() {
-  temp.req = this.makeRequest("get", this.endpoints.me.guilds);
+  temp.req = this.makeRequest("get", this.endpoints.me.guilds, null, null, null, false);
 
   if (this.checkForError(temp.req) == true) return;
     
@@ -141,8 +145,8 @@ function cacheChannels() {
   for (temp.guild : this.guilds) {
     temp.guild.channels = new TCollection().init("channels", temp.guild);
     
-    temp.url = format(this.endpoints.guild.channels, temp.guild.id);
-    temp.req = this.makeRequest("get", temp.url);
+    temp.url = format(this.endpoints.guild.channels, temp.guild.id, "", false);
+    temp.req = this.makeRequest("get", temp.url, null, null, null, false);
 
     if (checkForError(temp.req) == true) 
       return;
@@ -156,7 +160,7 @@ function cacheChannels() {
   }
 
   // Private channels
-  temp.req = this.makeRequest("get", this.endpoints.me.channels, "", false);
+  temp.req = this.makeRequest("get", this.endpoints.me.channels, null, null, null, false);
   
   if (checkForError(temp.req) == true) 
     return;
@@ -180,7 +184,7 @@ function cacheWebhooks() {
     temp.guild.webhooks = new TCollection().init("webhooks", temp.guild);
     
     temp.url = format(this.endpoints.guild.webhooks, temp.guild.id);
-    temp.req = this.makeRequest("get", temp.url, "", false);
+    temp.req = this.makeRequest("get", temp.url, null, null, null, false);
     
     if (this.checkForError(temp.req) == true) 
       return false;
@@ -208,7 +212,7 @@ function cacheUsers() {
 
     temp.req = this.makeRequest("get", format(this.endpoints.guild.members, temp.guild.id), {
       {"limit", 1000}
-    }, false);
+    }, null, null, false);
     
     if (this.checkForError(temp.req) == true) 
       return false;
@@ -239,3 +243,11 @@ public function newRichEmbed() {
   temp.obj.join("discord_embed");
   return temp.obj;
 }
+
+/*
+  Triggers error event with message
+
+  @param {string} error - Error message to display
+*/
+public function triggerError(temp.error) 
+  this.trigger("onError", temp.error);

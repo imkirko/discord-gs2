@@ -11,6 +11,10 @@
 
   funcs:
   connect(idOrUrl, token)
+
+  events:
+  onFailed()
+  onReady()
 */
 
 
@@ -32,7 +36,7 @@ public function connect(temp.idOrUrl, temp.token) {
     temp.token = temp.token;
   }
 
-  temp.req = this.makeRequest("get", format(this.endpoints.webhooks.token, temp.id, temp.token), null, false);
+  temp.req = this.makeRequest("get", format(this.endpoints.webhooks.token, temp.id, temp.token), null, null, null, false);
   temp.err = this.getError(temp.req);
 
   if (temp.err) {
