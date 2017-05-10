@@ -1,16 +1,3 @@
-GRNPC001
-NAME GlobalClasses
-ID 1003
-TYPE OBJECT
-SCRIPTER Kirko
-STARTLEVEL server.nw
-STARTX 30.5
-STARTY 30
-LEVEL server.nw
-X 30.5
-Y 30
-NPCSCRIPT
-
 function onCreated() {
   this.clearVars();
 
@@ -31,4 +18,3 @@ function createClass(className, type, extendedClasses) {
     this.(@ className).join(temp.c);
   //this.(@ className).joinedclasses = extendedClasses; // doesnt call onCreated()
 }
-NPCSCRIPTEND
