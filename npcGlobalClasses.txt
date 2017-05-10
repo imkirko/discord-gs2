@@ -1,3 +1,4 @@
+
 function onCreated() {
   this.clearVars();
 
@@ -5,6 +6,8 @@ function onCreated() {
   createClass("TDiscord", "TStaticVar", {"discord", "discord_embed", "discord_http_endpoints", "discord_http"});
   createClass("TCollection", "TStaticVar", {"discord_collection"});
   createClass("TWebhookClient", "TStaticVar", {"discord_webhook_client", "discord_embed", "discord_http_endpoints", "discord_http"});
+  //createClass("Guild", "TCollection", {"discord_guild"});
+  //createClass("Test", "TSocket", {"discord_socket"});
 
   RC.showErrors();
 }
@@ -16,5 +19,4 @@ function createClass(className, type, extendedClasses) {
   this.(@ className) = new (@ type)(@ className);
   for (temp.c : extendedClasses)
     this.(@ className).join(temp.c);
-  //this.(@ className).joinedclasses = extendedClasses; // doesnt call onCreated()
 }
